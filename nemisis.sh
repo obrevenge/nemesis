@@ -385,6 +385,13 @@ echo "# Installation Finished!"
 ) | zenity --progress --title="$title" --width=450 --pulsate --no-cancel
 }
 
+# System Detection
+if [[ -d "/sys/firmware/efi/" ]]; then
+      SYSTEM="UEFI"
+      else
+      SYSTEM="BIOS"
+fi
+
 # Adapted from AIS. An excellent bit of code!
 arch_chroot() {
     arch-chroot /mnt /bin/bash -c "${1}"
