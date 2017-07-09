@@ -158,7 +158,7 @@ lsblk -lno NAME,TYPE | grep 'disk' | awk '{print "/dev/" $1 " " $2}' | sort -u >
 sed -i 's/\<disk\>//g' devices.txt
 devices=` awk '{print "FALSE " $0}' devices.txt `
 
-grub=$(zenity --question --title="$title" --text "Would you like to install the bootloader?\nThe answer to this is usually yes,\nunless you are dual-booting and plan to have another system handle\nthe boot process.")
+grub=$(zenity --list --radiolist --title="$title" --text "Would you like to install the bootloader?\nThe answer to this is usually yes,\nunless you are dual-booting and plan to have another system handle\nthe boot process." --column="Select" --column="Answer" FALSE yes FALSE no) 
 if [ "$grub" = "$1" ]
 	then grub_device=$(zenity --list --title="$title" --text "Where do you want to install the bootloader?" --radiolist --column Select --column Device $devices)
 fi
@@ -349,7 +349,7 @@ fi
 arch_chroot "systemctl enable NetworkManager"
 
 # installing bootloader
-if [ "$grub" = "Yes" ]
+if [ "$grub" = "yes" ]
     then
         if [ "$SYSTEM" = 'BIOS' ]
             then echo "# Installing Bootloader..."
