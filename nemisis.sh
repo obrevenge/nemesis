@@ -82,6 +82,25 @@ partitions() {
             fi   
             
             ./mountpoints
+
+		elif [ "$part" == "Automatic" ]
+			then
+			list=` lsblk -lno NAME,TYPE,SIZE,MOUNTPOINT | grep "disk" `
+
+	zenity --info --title="$title" --text "Below is a list of the available drives on your system:\n\n$list" --height=10 width=150
+
+	lsblk -lno NAME,TYPE | grep 'disk' | awk '{print "/dev/" $1 " " $2}' | sort -u > devices.txt
+	sed -i 's/\<disk\>//g' devices.txt
+	devices=` awk '{print "FALSE " $0}' devices.txt `
+
+	dev=$(zenity --list --title="$title" --radiolist --text "Select the drive that you want to use for installation." --column Drive --column Info $devices)
+
+        touch root_part.txt
+        if [ "$SYSTEM" = "BIOS" ]
+	then echo {$dev}1 >> root_part.txt
+	else echo {$dev}2 >> root_part.txt
+        fi 
+
         
 
     fi
@@ -93,7 +112,7 @@ config1(){
     zones=$(cat /usr/share/zoneinfo/zone.tab | awk '{print $3}' | grep "/" | sed "s/\/.*//g" | sort -ud | sort | awk '{ printf "!""\0"$0"\0" }')
 
     yad --width=600 --height=400 --center --title="$title" --image="$logo" --text "Configuration" --form --field="Select Your Keyboard Layout:":CB --field="Select Your locale:":CB --field="Select Your Region:":CB --separator=" " \
-    "us!af!al!am!at!az!ba!bd!be!bg!br!bt!bw!by!ca!cd!ch!cm!cn!cz!de!dk!ee!es!et!eu!fi!fo!fr!gb!ge!gh!gn!gr!hr!hu!ie!il!in!iq!ir!is!it!jp!ke!kg!kh!kr!kz!la!lk!lt!lv!ma!md!me!mk!ml!mm!mn!mt!mv!ng!nl!no!np!pc!ph!pk!pl!pt!ro!rs!ru!se!si!sk!sn!sy!tg!th!tj!tm!tr!tw!tz!ua!uz!vn!za" "en_US-UTF-8 $locales" "$zones" > config1.txt
+    "us!af!al!am!at!az!ba!bd!be!bg!br!bt!bw!by!ca!cd!ch!cm!cn!cz!de!dk!ee!es!et!eu!fi!fo!fr!gb!ge!gh!gn!gr!hr!hu!ie!il!in!iq!ir!is!it!jp!ke!kg!kh!kr!kz!la!lk!lt!lv!ma!md!me!mk!ml!mm!mn!mt!mv!ng!nl!no!np!pc!ph!pk!pl!pt!ro!rs!ru!se!si!sk!sn!sy!tg!th!tj!tm!tr!tw!tz!ua!uz!vn!za" "en_US.UTF-8 $locales" "$zones" > config1.txt
 
     key=` cat config1.txt | awk '{print $1;}' `
     locale=` cat config1.txt | awk '{print $2;}' `
@@ -179,22 +198,6 @@ confirm() {
 }
 
 auto_partition() {
-	list=` lsblk -lno NAME,TYPE,SIZE,MOUNTPOINT | grep "disk" `
-
-	zenity --info --title="$title" --text "Below is a list of the available drives on your system:\n\n$list" --height=10 width=150
-
-	lsblk -lno NAME,TYPE | grep 'disk' | awk '{print "/dev/" $1 " " $2}' | sort -u > devices.txt
-	sed -i 's/\<disk\>//g' devices.txt
-	devices=` awk '{print "FALSE " $0}' devices.txt `
-
-	dev=$(zenity --list --title="$title" --radiolist --text "Select the drive that you want to use for installation." --column Drive --column Info $devices)
-
-        touch root_part.txt
-        if [ "$SYSTEM" = "BIOS" ]
-	then echo {$dev}1 >> root_part.txt
-	else echo {$dev}2 >> root_part.txt
-        fi 
-
 	# Find total amount of RAM
 	ram=$(grep MemTotal /proc/meminfo | awk '{print $2/1024}' | sed 's/\..*//')
 	# Find where swap partition stops
@@ -247,7 +250,7 @@ auto_partition() {
 installing() {
 (
 if [ "$part" == "Automatic" ]
-    echo "10"
+    then echo "10"
     echo "# Paritioning Disk..."
     auto_partition
 fi
@@ -359,8 +362,8 @@ if [ "$desktop" = "Gnome" ]
 else
     pacstrap /mnt lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
     arch_chroot "systemctl enable lightdm.service"
-    echo "theme-name = Adwaita-dark" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
-    echo "background = /usr/share/Wallpaper/Shadow_cast-RevengeOS-v2.png" /mnt/etc/lightdm/lightdm-gtk-greeter.conf
+    echo "theme-name = BlackMATE" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
+    echo "background = /usr/share/Wallpaper/Shadow_cast-RevengeOS-v2.png" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
 fi
 
 # enabling network manager
@@ -382,7 +385,7 @@ if [ "$grub" = "yes" ]
 	    echo "# Installing Bootloader..."
             pacstrap /mnt grub
 	    # fixing grub theme
-	    echo "GRUB_DISTRIBUTOR='Revenge OS'"
+	    echo "GRUB_DISTRIBUTOR='Revenge OS'" >> /mnt/etc/default/grub
 	    echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-RevengeOS.png"' >> /mnt/etc/default/grub
             arch_chroot "grub-install --target=i386-pc $grub_device"
             arch_chroot "grub-mkconfig -o /boot/grub/grub.cfg"
