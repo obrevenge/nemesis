@@ -347,6 +347,17 @@ fi
 # enabling network manager
 arch_chroot "systemctl enable NetworkManager"
 
+# fixing revenge branding
+sed -i.bak 's/Arch Linux/Revenge OS/g' /usr/lib/os-release
+sed -i.bak 's/arch/revenge/g' /usr/lib/os-release
+sed -i.bak 's/www.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
+sed -i.bak 's/bbs.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
+sed -i.bak 's/bugs.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
+cp /usr/lib/os-release /etc/os-release
+
+# fixing grub theme
+echo "GRUB_DISTRIBUTOR='Revenge OS'\nGRUB_BACKGROUND=\"/usr/share/Wallpaper/Shadow_cast-RevengeOS.png\"" >> /mnt/etc/default/grub
+
 # installing bootloader
 if [ "$grub" = "yes" ]
     then
