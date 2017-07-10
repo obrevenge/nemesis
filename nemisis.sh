@@ -82,10 +82,6 @@ partitions() {
             fi   
             
             ./mountpoints
-            
-        elif [ "$part" == "Automatic" ]
-            then echo "partition=\"automatic\"" >> nemesis.conf
-            auto_partition
         
 
     fi
@@ -113,8 +109,8 @@ config1(){
 config2() {
     subzones=$(cat /usr/share/zoneinfo/zone.tab | awk '{print $3}' | grep "$zone/" | sed "s/$zone\///g" | sort -ud | sort | awk '{ printf "!""\0"$0"\0" }')
 
-    yad --width=600 --height=400 --center --title="$title" --image="$logo" --text "Configuration" --form --field="Select your sub-zone:":CB --field="Use UTC or Local Time?":CB --field="Choose a hostname:" --field="Choose a username:" --field="Enter Your User Password:H" --field="Re-enter Your User Password:H" --separator=" " \
-    "$subzones" "!UTC!Localtime" "" "" "" "" > config2.txt
+    yad --width=600 --height=400 --center --title="$title" --image="$logo" --text "Configuration" --form --field="Select your sub-zone:":CB --field="Use UTC or Local Time?":CB --field="Choose a hostname:" --field="Choose a username:" --field="Enter Your User Password:H" --field="Re-enter Your User Password:H" --field="Install Bootloader?":CB --separator=" " \
+    "$subzones" "!UTC!Localtime" "" "" "" "" "yes!no"> config2.txt
 
     subzone=` cat config2.txt | awk '{print $1;}' `
     clock=` cat config2.txt | awk '{print $2;}' `
@@ -122,11 +118,20 @@ config2() {
     username=` cat config2.txt | awk '{print $4;}' `
     rtpasswd1=` cat config2.txt | awk '{print $5;}' `
     rtpasswd2=` cat config2.txt | awk '{print $6;}' `
+    grub=` cat config2.txt | awk '{print $7;}' `
 
     if [ "$rtpasswd1" != "$rtpasswd2" ]
             then zenity --error --title="$title" --text "The passwords did not match, please try again." --height=40
             config2
     fi
+
+    lsblk -lno NAME,TYPE | grep 'disk' | awk '{print "/dev/" $1 " " $2}' | sort -u > devices.txt
+sed -i 's/\<disk\>//g' devices.txt
+devices=` awk '{print "FALSE " $0}' devices.txt `
+
+    if [ "$grub" = "yes" ]
+	then grub_device=$(zenity --list --title="$title" --text "Where do you want to install the bootloader?" --radiolist --column Select --column Device $devices)
+fi
 
     echo "subzone=\"$subzone\"" >> nemesis.conf
     echo "clock=\"$clock\"" >> nemesis.conf
@@ -165,11 +170,9 @@ fi
 }
 
 confirm() {
-    ans=$(yad --width=600 --center --radiolist --list --title="$title" --image="$logo" --text="You have chosen the following:\n\n$part partitioning\n\nKeyboard layout: $key\n\nTimezone: $zone $subzone\n\nHostname: $hname\n\nUsername: $username\n\nClock configuration: $clock\n\nDesktop: $desktop\n\nIf the above options are correct, click Continue.\nIf you need to make changes, click 'Cancel' to start over." --column="Select" --column="Choice" false "Continue" false "Cancel" --separator=" ")
+    ans=$(zenity --width=600 --list --radiolist --title="$title" --text="You have chosen the following:\n\n$part partitioning\n\nKeyboard layout: $key\n\nTimezone: $zone $subzone\n\nHostname: $hname\n\nUsername: $username\n\nClock configuration: $clock\n\nDesktop: $desktop\n\nIf the above options are correct, click Continue.\nIf you need to make changes, click 'Cancel' to start over." --column="Select" --column="Choice" FALSE "Continue" FALSE "Cancel" --separator=" ")
     
-    answer=` echo $ans | awk '{print $2;}' `
-    
-    if [ "$answer" = "Cancel" ]
+    if [ "$ans" = "Cancel" ]
         then greeting
     fi
     
@@ -208,7 +211,6 @@ auto_partition() {
 	#BIOS or UEFI
     if [ "$SYSTEM" = "BIOS" ]
         then
-	       (echo "# Creating Partitions for BIOS..."
 	        dd if=/dev/zero of=$dev bs=512 count=1
 	        Parted "mklabel msdos"
 	        Parted "mkpart primary ext4 1MiB 100%"
@@ -220,9 +222,8 @@ auto_partition() {
 		chmod 600 /mnt/swapfile
 		mkswap /mnt/swapfile
 		swapon /mnt/swapfile
-		swapfile="yes") | zenity --progress --title="$title" --width=450 --pulsate --auto-close --no-cancel
+		swapfile="yes"
 	    else
-            	(echo "# Creating Partitions for UEFI..."
             	dd if=/dev/zero of=$dev bs=512 count=1
             	Parted "mklabel gpt"
             	Parted "mkpart primary fat32 1MiB 513MiB"
@@ -238,14 +239,21 @@ auto_partition() {
 		chmod 600 /mnt/swapfile
 		mkswap /mnt/swapfile
 		swapon /mnt/swapfile
-		swapfile="yes") | zenity --progress --title="$title" --width=450 --pulsate --auto-close --no-cancel
+		swapfile="yes"
 	fi
 			
 }
 
 installing() {
 (
+if [ "$part" == "Automatic" ]
+    echo "10"
+    echo "# Paritioning Disk..."
+    auto_partition
+fi
+
 # sorting pacman mirrors
+echo "15"
 echo "# Sorting fastest pacman mirrors..."
 reflector --verbose -l 50 -p http --sort rate --save /etc/pacman.d/mirrorlist
 
@@ -255,6 +263,7 @@ pacman -Syy
 arch_chroot "pacman -Syy"
 
 #installing base
+echo "20"
 echo "# Installing Base..."
 pacstrap /mnt base base-devel
 
@@ -264,6 +273,7 @@ cp /etc/pacman.conf /mnt/etc/pacman.conf
 
 
 #generating fstab
+echo "50"
 echo "# Generating File System Table..."
 genfstab -p /mnt >> /mnt/etc/fstab
 if grep -q "/mnt/swapfile" "/mnt/etc/fstab"; then
@@ -272,6 +282,7 @@ echo "/swapfile		none	swap	defaults	0	0" >> /mnt/etc/fstab
 fi
 
 #setting locale
+echo "55"
 echo "# Generating Locale..."
 echo "LANG=\"${locale}\"" > /mnt/etc/locale.conf
 echo "${locale} UTF-8" > /mnt/etc/locale.gen
@@ -283,11 +294,13 @@ mkdir -p /mnt/etc/X11/xorg.conf.d/
 echo -e 'Section "InputClass"\n	Identifier "system-keyboard"\n	MatchIsKeyboard "on"\n	Option "XkbLayout" "'$key'"\n	Option "XkbModel" "'$model'"\n	Option "XkbVariant" ",'$variant'"\n	 Option "XkbOptions" "grp:alt_shift_toggle"\nEndSection' > /mnt/etc/X11/xorg.conf.d/00-keyboard.conf
 
 #setting timezone
+echo "60"
 echo "# Setting Timezone..."
 arch_chroot "rm /etc/localtime"
 arch_chroot "ln -s /usr/share/zoneinfo/${zone}/${subzone} /etc/localtime"
 
 #setting hw clock
+echo "65"
 echo "# Setting System Clock..."
 arch_chroot "hwclock --systohc --$clock"
 
@@ -299,7 +312,8 @@ arch_chroot "echo $hname > /etc/hostname"
 echo "%wheel ALL=(ALL) ALL" >> /mnt/etc/sudoers
 
 # installing video and audio packages
-echo "# Installing Desktop, Sound, and Video Drivers..."
+echo "70"
+echo "# Installing Sound, and Video Drivers..."
 pacstrap /mnt  mesa xorg-server xorg-apps xorg-xinit xorg-drivers xterm alsa-utils pulseaudio pulseaudio-alsa xf86-input-synaptics xf86-input-keyboard xf86-input-mouse xf86-input-libinput intel-ucode b43-fwcutter networkmanager nm-connection-editor network-manager-applet polkit-gnome gksu ttf-dejavu gnome-keyring xdg-user-dirs gvfs libmtp gvfs-mtp wpa_supplicant dialog iw reflector rsync mlocate bash-completion htop unrar p7zip yad yaourt pamac-aur polkit-gnome lynx wget zenity gksu squashfs-tools ntfs-3g gptfdisk cups ghostscript gsfonts
 
 # virtualbox
@@ -309,6 +323,8 @@ if [ "$vbox" = "yes" ]
 fi
 
 # installing chosen desktop
+echo "80"
+echo "# Installing Chosen Desktop..."
 if [ "$desktop" = "Gnome" ]
     then pacstrap /mnt gnome gnome-extra gnome-revenge-desktop gnome-shell-extension-dash-to-dock gnome-shell-extension-impatience gnome-shell-extension-topicons-plus
 elif [ "$desktop" = "OBR Openbox" ]
@@ -324,12 +340,14 @@ elif [ "$desktop" = "i3" ]
 fi
 
 #root password
+echo "85"
 echo "# Setting root password..."
 touch .passwd
 echo -e "$rtpasswd1\n$rtpasswd2" > .passwd
 arch_chroot "passwd root" < .passwd >/dev/null
 
 #adding user
+echo "90"
 echo "# Making new user..."
 arch_chroot "useradd -m -g users -G adm,lp,wheel,power,audio,video -s /bin/bash $username"
 arch_chroot "passwd $username" < .passwd >/dev/null
@@ -341,29 +359,31 @@ if [ "$desktop" = "Gnome" ]
 else
     pacstrap /mnt lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
     arch_chroot "systemctl enable lightdm.service"
-    cp -rf /etc/lightdm /mnt/etc/lightdm
+    echo "theme-name = Adwaita-dark" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
+    echo "background = /usr/share/Wallpaper/Shadow_cast-RevengeOS-v2.png" /mnt/etc/lightdm/lightdm-gtk-greeter.conf
 fi
 
 # enabling network manager
 arch_chroot "systemctl enable NetworkManager"
 
 # fixing revenge branding
-sed -i.bak 's/Arch Linux/Revenge OS/g' /usr/lib/os-release
-sed -i.bak 's/arch/revenge/g' /usr/lib/os-release
-sed -i.bak 's/www.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
-sed -i.bak 's/bbs.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
-sed -i.bak 's/bugs.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
+sed -i 's/Arch Linux/Revenge OS/g' /usr/lib/os-release
+sed -i 's/arch/revenge/g' /usr/lib/os-release
+sed -i 's/www.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
+sed -i 's/bbs.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
+sed -i 's/bugs.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
 cp /usr/lib/os-release /etc/os-release
-
-# fixing grub theme
-echo "GRUB_DISTRIBUTOR='Revenge OS'\nGRUB_BACKGROUND=\"/usr/share/Wallpaper/Shadow_cast-RevengeOS.png\"" >> /mnt/etc/default/grub
 
 # installing bootloader
 if [ "$grub" = "yes" ]
     then
         if [ "$SYSTEM" = 'BIOS' ]
-            then echo "# Installing Bootloader..."
+            then echo "95"
+	    echo "# Installing Bootloader..."
             pacstrap /mnt grub
+	    # fixing grub theme
+	    echo "GRUB_DISTRIBUTOR='Revenge OS'"
+	    echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-RevengeOS.png"' >> /mnt/etc/default/grub
             arch_chroot "grub-install --target=i386-pc $grub_device"
             arch_chroot "grub-mkconfig -o /boot/grub/grub.cfg"
         else
@@ -385,6 +405,7 @@ fi
 
 
 # running mkinit
+echo "98"
 echo "# Running mkinitcpio..."
 arch_chroot "mkinitcpio -p linux"
 
@@ -392,7 +413,7 @@ arch_chroot "mkinitcpio -p linux"
 umount -R /mnt
 
 echo "# Installation Finished!" 
-) | zenity --progress --title="$title" --width=450 --pulsate --no-cancel
+) | zenity --progress --title="$title" --width=450 --no-cancel
 }
 
 # System Detection
@@ -421,7 +442,7 @@ config2
 desktop
 confirm
 vbox
-bootloader
+#bootloader
 installing
 
 
