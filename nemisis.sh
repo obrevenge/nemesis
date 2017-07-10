@@ -271,18 +271,6 @@ sed -i '/swapfile/d' /mnt/etc/fstab
 echo "/swapfile		none	swap	defaults	0	0" >> /mnt/etc/fstab
 fi
 
-#root password
-echo "# Setting root password..."
-touch .passwd
-echo -e "$rtpasswd1\n$rtpasswd2" > .passwd
-arch_chroot "passwd root" < .passwd >/dev/null
-
-#adding user
-echo "# Making new user..."
-arch_chroot "useradd -m -g users -G adm,lp,wheel,power,audio,video -s /bin/bash $username"
-arch_chroot "passwd $username" < .passwd >/dev/null
-rm .passwd
-
 #setting locale
 echo "# Generating Locale..."
 echo "LANG=\"${locale}\"" > /mnt/etc/locale.conf
@@ -322,7 +310,7 @@ fi
 
 # installing chosen desktop
 if [ "$desktop" = "Gnome" ]
-    then pacstrap /mnt gnome gnome-extra gnome-revenge-desktop
+    then pacstrap /mnt gnome gnome-extra gnome-revenge-desktop gnome-shell-extension-dash-to-dock gnome-shell-extension-impatience gnome-shell-extension-topicons-plus
 elif [ "$desktop" = "OBR Openbox" ]
     then pacstrap /mnt obr-desktop
 elif [ "$desktop" = "Plasma" ]
@@ -330,10 +318,22 @@ elif [ "$desktop" = "Plasma" ]
 elif [ "$desktop" = "XFCE" ]
     then pacstrap /mnt xfce4 xfce4-goodies xfce-revenge-desktop
 elif [ "$desktop" = "Mate" ]
-    then pacstrap /mnt mate mate-extra mate-revenge-desktop
+    then pacstrap /mnt mate mate-extra mate-revenge-desktop mate-tweak brisk-menu plank mate-applet-dock mate-menu mate-netbook synapse tilda topmenu-gtk blueman metacity
 elif [ "$desktop" = "i3" ]
     then pacstrap /mnt i3-revenge-desktop
 fi
+
+#root password
+echo "# Setting root password..."
+touch .passwd
+echo -e "$rtpasswd1\n$rtpasswd2" > .passwd
+arch_chroot "passwd root" < .passwd >/dev/null
+
+#adding user
+echo "# Making new user..."
+arch_chroot "useradd -m -g users -G adm,lp,wheel,power,audio,video -s /bin/bash $username"
+arch_chroot "passwd $username" < .passwd >/dev/null
+rm .passwd
 
 # starting desktop manager
 if [ "$desktop" = "Gnome" ]
@@ -341,8 +341,7 @@ if [ "$desktop" = "Gnome" ]
 else
     pacstrap /mnt lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
     arch_chroot "systemctl enable lightdm.service"
-    rm -rf /mnt/etc/lightdm
-    cp -r /etc/lightdm /mnt/etc/lightdm
+    cp -rf /etc/lightdm /mnt/etc/lightdm
 fi
 
 # enabling network manager
