@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Name[en_US]=Revenge OS Welcome
+Exec=revenge-welcome
+Comment[en_US]=Welcome Screen for Revenge OS
+Name=Revenge OS Welcome
+Comment=Welcome Screen for Revenge OS

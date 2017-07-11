@@ -339,7 +339,7 @@ elif [ "$desktop" = "XFCE" ]
 elif [ "$desktop" = "Mate" ]
     then pacstrap /mnt mate mate-extra mate-revenge-desktop mate-tweak brisk-menu plank mate-applet-dock mate-menu mate-netbook synapse tilda topmenu-gtk blueman metacity
 elif [ "$desktop" = "i3" ]
-    then pacstrap /mnt i3-revenge-desktop py3status light playerctl python-pytz python-tzlocal pamixer
+    then pacstrap /mnt i3-revenge-desktop
 fi
 
 #root password
@@ -370,12 +370,12 @@ fi
 arch_chroot "systemctl enable NetworkManager"
 
 # fixing revenge branding
-sed -i 's/Arch Linux/Revenge OS/g' /usr/lib/os-release
-sed -i 's/arch/revenge/g' /usr/lib/os-release
-sed -i 's/www.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
-sed -i 's/bbs.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
-sed -i 's/bugs.archlinux.org/www.obrevenge.weebly.com/g' /usr/lib/os-release
-cp /usr/lib/os-release /etc/os-release
+rm -f /mnt/etc/os-release
+cp os-release /mnt/etc/os-release
+
+# setting welcome screen to auto-start
+mkdir -p /mnt/etc/skel/.config/autostart
+cp obwelcome.desktop /mnt/etc/skel/.config/autostart/
 
 # installing bootloader
 if [ "$grub" = "yes" ]
