@@ -339,7 +339,7 @@ elif [ "$desktop" = "XFCE" ]
 elif [ "$desktop" = "Mate" ]
     then pacstrap /mnt mate mate-extra mate-revenge-desktop mate-tweak brisk-menu plank mate-applet-dock mate-menu mate-netbook synapse tilda topmenu-gtk blueman metacity
 elif [ "$desktop" = "i3" ]
-    then pacstrap /mnt i3-revenge-desktop
+    then pacstrap /mnt i3-revenge-desktop py3status light playerctl python-pytz python-tzlocal pamixer
 fi
 
 #root password
