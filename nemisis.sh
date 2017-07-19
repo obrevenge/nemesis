@@ -44,7 +44,7 @@ partitions() {
                 done
         
             rm mountpoints.txt
-            echo "!#/bin/bash" > mountpoints
+            echo "#!/bin/bash" > mountpoints
             for i in $(echo $partitions)
                 do
                     line=$(head -n 1 mounts.txt)
