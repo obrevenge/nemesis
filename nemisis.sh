@@ -335,7 +335,7 @@ if [ "$desktop" = "Gnome" ]
     rm -f /mnt/usr/share/xsessions/gnome-classic.desktop
     mv /mnt/usr/share/xsessions/gnome-xorg.desktop /mnt/usr/share/xsessions/gnome.desktop
 elif [ "$desktop" = "OBR Openbox" ]
-    then pacstrap /mnt obr-desktop
+    then pacstrap /mnt obr-desktop surfn-icons-git
 elif [ "$desktop" = "Plasma" ]
     then pacstrap /mnt plasma plasma-revenge-desktop
 elif [ "$desktop" = "XFCE" ]
