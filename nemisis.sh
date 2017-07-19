@@ -354,6 +354,10 @@ touch .passwd
 echo -e "$rtpasswd1\n$rtpasswd2" > .passwd
 arch_chroot "passwd root" < .passwd >/dev/null
 
+# setting welcome screen to auto-start
+mkdir -p /mnt/etc/skel/.config/autostart
+cp obwelcome.desktop /mnt/etc/skel/.config/autostart/
+
 #adding user
 echo "90"
 echo "# Making new user..."
@@ -379,10 +383,6 @@ rm -f /mnt/etc/os-release
 cp os-release /mnt/etc/os-release
 rm -f /mnt/etc/lsb-release
 cp lsb-release /mnt/etc/lsb-release
-
-# setting welcome screen to auto-start
-mkdir -p /mnt/etc/skel/.config/autostart
-cp obwelcome.desktop /mnt/etc/skel/.config/autostart/
 
 # installing bootloader
 if [ "$grub" = "yes" ]
