@@ -330,6 +330,10 @@ echo "80"
 echo "# Installing Chosen Desktop..."
 if [ "$desktop" = "Gnome" ]
     then pacstrap /mnt gnome gnome-extra gnome-revenge-desktop gnome-shell-extension-dash-to-dock gnome-shell-extension-impatience gnome-shell-extension-topicons-plus
+    # making gnome on xorg only login option
+    rm -f /mnt/usr/share/xsessions/gnome.desktop
+    rm -f /mnt/usr/share/xsessions/gnome-classic.desktop
+    mv /mnt/usr/share/xsessions/gnome-xorg.desktop /mnt/usr/share/xsessions/gnome.desktop
 elif [ "$desktop" = "OBR Openbox" ]
     then pacstrap /mnt obr-desktop
 elif [ "$desktop" = "Plasma" ]
