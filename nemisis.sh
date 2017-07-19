@@ -66,7 +66,7 @@ partitions() {
                 mkdir /mnt/var
             fi   
             
-            if [[ $(cat mountpoints | grep -i 'data') != "" ];then 
+            if [[ $(cat mountpoints | grep -i 'data') != "" ]];then 
                 mkdir /mnt/data
             fi   
             
