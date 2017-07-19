@@ -54,28 +54,28 @@ partitions() {
         
             chmod +x mountpoints
             sed -i '/NA/d' mountpoints
-            if [[ $(cat mountpoints | grep -i 'boot') != "" ]]
-                then mkdir /mnt/boot
+            if [[ $(cat mountpoints | grep -i 'boot') != "" ]];then 
+                  mkdir /mnt/boot
             fi
             
-            if [[ $(cat mountpoints | grep -i 'home') != "" ]]
-                then mkdir /mnt/home
+            if [[ $(cat mountpoints | grep -i 'home') != "" ]];then 
+                mkdir /mnt/home
             fi       
             
-            if [[ $(cat mountpoints | grep -i 'var') != "" ]]
-                then mkdir /mnt/var
+            if [[ $(cat mountpoints | grep -i 'var') != "" ]];then 
+                mkdir /mnt/var
             fi   
             
-            if [[ $(cat mountpoints | grep -i 'data') != "" ]]
-                then mkdir /mnt/data
+            if [[ $(cat mountpoints | grep -i 'data') != "" ];then 
+                mkdir /mnt/data
             fi   
             
-            if [[ $(cat mountpoints | grep -i 'media') != "" ]]
-                then mkdir /mnt/media
+            if [[ $(cat mountpoints | grep -i 'media') != "" ]];then 
+                mkdir /mnt/media
             fi   
             
-            if [[ $(cat mountpoints | grep -i 'swap') != "" ]]
-                then swapspace=` cat mountpoints | grep -i 'swap' | awk '{print $2;}' `
+            if [[ $(cat mountpoints | grep -i 'swap') != "" ]];then 
+                swapspace=` cat mountpoints | grep -i 'swap' | awk '{print $2;}' `
                 mkswap $swapspace
                 swapon $swapspace
                 sed -i '/swap/d' mountpoints
