@@ -377,6 +377,8 @@ arch_chroot "systemctl enable NetworkManager"
 # fixing revenge branding
 rm -f /mnt/etc/os-release
 cp os-release /mnt/etc/os-release
+rm -f /mnt/etc/lsb-release
+cp lsb-release /mnt/etc/lsb-release
 
 # setting welcome screen to auto-start
 mkdir -p /mnt/etc/skel/.config/autostart
