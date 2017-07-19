@@ -340,7 +340,7 @@ elif [ "$desktop" = "Mate" ]
     then pacstrap /mnt mate mate-extra mate-revenge-desktop mate-tweak brisk-menu plank mate-applet-dock mate-menu mate-netbook synapse tilda topmenu-gtk blueman metacity
 elif [ "$desktop" = "i3" ]
     then pacstrap /mnt i3-revenge-desktop
-    sed -i 's:format = 'Spring Hill {America/New_York} ':format = '${zone} {${zone}/${subzone}}:g' /mnt/etc/skel/.config/i3status/config
+    sed -i "s|zone|${zone}/${subzone}|g" /mnt/etc/skel/.config/i3status/config
 fi
 
 #root password
