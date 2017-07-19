@@ -32,7 +32,7 @@ partitions() {
             do
                 echo "--field=${i}:CB"
             done)
-            mounts=$(yad --width=600 --height=500 --title="$title" --text="What Partitions Do You Want to Use?\nSelect a Mount Point for Each Partition that You want to Use." --image="$logo" --separator=" " --form $fields \
+            mounts=$(yad --width=600 --height=500 --center --title="$title" --text="What Partitions Do You Want to Use?\nSelect a Mount Point for Each Partition that You want to Use." --image="$logo" --separator=" " --form $fields \
             "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap")
         
             rm mounts.txt
