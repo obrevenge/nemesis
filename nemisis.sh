@@ -378,17 +378,25 @@ fi
 # enabling network manager
 arch_chroot "systemctl enable NetworkManager"
 
+# fix theme for applications running as root
+cp -r /mnt/etc/skel/. /mnt/root/
+
 # fixing revenge branding
 rm -f /mnt/etc/os-release
 cp os-release /mnt/etc/os-release
 rm -f /mnt/etc/lsb-release
 cp lsb-release /mnt/etc/lsb-release
 
+# running mkinit
+echo "95"
+echo "# Running mkinitcpio..."
+arch_chroot "mkinitcpio -p linux"
+
 # installing bootloader
 if [ "$grub" = "yes" ]
     then
         if [ "$SYSTEM" = 'BIOS' ]
-            then echo "95"
+            then echo "98"
 	    echo "# Installing Bootloader..."
             pacstrap /mnt grub
 	    # fixing grub theme
@@ -413,11 +421,6 @@ if [ "$grub" = "yes" ]
         fi
 fi  
 
-
-# running mkinit
-echo "98"
-echo "# Running mkinitcpio..."
-arch_chroot "mkinitcpio -p linux"
 
 # unmounting partitions
 umount -R /mnt
