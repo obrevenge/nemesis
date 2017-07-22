@@ -51,7 +51,8 @@ partitions() {
                     echo "mount $i $line" >> mountpoints
                     tail -n +2 mounts.txt > mounts.txt.tmp && mv mounts.txt.tmp mounts.txt
                 done
-        
+            root=` cat mountpoints | grep -i '/ ' | awk '{print $2;}' `
+	    mount $root /mnt
             chmod +x mountpoints
             sed -i '/NA/d' mountpoints
             if [[ $(cat mountpoints | grep -i 'boot') != "" ]];then 
