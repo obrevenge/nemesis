@@ -27,13 +27,18 @@ partitions() {
     if [ "$part" == "Manual" ]
         then echo "partition=\"manual\"" >> nemesis.conf
         gparted
-        partitions=` find /dev -mindepth 1 -maxdepth 1  -name "*[sh]d[a-z][0-9]"  | sort | xargs -0 `
+        partitions=` fdisk -l | grep dev | grep -v Disk | awk '{print $1}' `
         fields=$(for i in $(echo $partitions)
             do
                 echo "--field=${i}:CB"
             done)
             mounts=$(yad --width=600 --height=500 --center --title="$title" --text="What Partitions Do You Want to Use?\nSelect a Mount Point for Each Partition that You want to Use." --image="$logo" --separator=" " --form $fields \
-            "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap" "NA!/boot!/!/home!/var!/data!/media!swap")
+            "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap"
+            "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap"
+            "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap"
+            "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap"
+            "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap"
+            "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap")
         
             rm mounts.txt
             for m in $(echo $mounts)
@@ -51,38 +56,73 @@ partitions() {
                     echo "mount $i $line" >> mountpoints
                     tail -n +2 mounts.txt > mounts.txt.tmp && mv mounts.txt.tmp mounts.txt
                 done
-            root=` cat mountpoints | grep -i '/mnt/ ' | awk '{print $2;}' `
-	    mount $root /mnt
-            chmod +x mountpoints
+                
+            #mounting root partition
+            root=` cat mountpoints | grep -i '/root' | awk '{print $2;}' `
+            mount $root /mnt
+            
+            # removing  un-selecting partions from file
             sed -i '/NA/d' mountpoints
+            
+            # checking for boot partition selection
             if [[ $(cat mountpoints | grep -i 'boot') != "" ]];then 
                   mkdir /mnt/boot
+                  # mounting boot partition
+                  boot=` cat mountpoints | grep -i '/boot' | awk '{print $2;}' `
+                  mount $boot /mnt/boot
             fi
             
+            # checking for home partition selection
             if [[ $(cat mountpoints | grep -i 'home') != "" ]];then 
-                mkdir /mnt/home
-            fi       
+                  mkdir /mnt/home
+                  # mounting home partition
+                  home=` cat mountpoints | grep -i '/home' | awk '{print $2;}' `
+                  mount $home /mnt/home
+            fi
             
+            # checking for var partition selection
             if [[ $(cat mountpoints | grep -i 'var') != "" ]];then 
-                mkdir /mnt/var
-            fi   
+                  mkdir /mnt/var
+                  # mounting var partition
+                  var=` cat mountpoints | grep -i '/var' | awk '{print $2;}' `
+                  mount $var /mnt/var
+            fi
             
+            # checking for data partition selection
             if [[ $(cat mountpoints | grep -i 'data') != "" ]];then 
-                mkdir /mnt/data
-            fi   
+                  mkdir /mnt/data
+                  # mounting data partition
+                  data=` cat mountpoints | grep -i '/data' | awk '{print $2;}' `
+                  mount $data /mnt/data
+            fi
             
+            # checking for media partition selection
             if [[ $(cat mountpoints | grep -i 'media') != "" ]];then 
-                mkdir /mnt/media
-            fi   
-            
+                  mkdir /mnt/media
+                  # mounting media partition
+                  media=` cat mountpoints | grep -i '/media' | awk '{print $2;}' `
+                  mount $media /mnt/media
+            fi
+
+            # checking for swap partition selection
             if [[ $(cat mountpoints | grep -i 'swap') != "" ]];then 
                 swapspace=` cat mountpoints | grep -i 'swap' | awk '{print $2;}' `
                 mkswap $swapspace
                 swapon $swapspace
                 sed -i '/swap/d' mountpoints
             fi   
-            
-            ./mountpoints
+           
+           # offering to create swapfile on /
+           zenity --question --title="$title" --text "Would you like to create a 1GB swapfile on root?\nIf you've already mounted a swap partition or don't want swap, select \"No\".\nThis process could take some time, so please be patient." --height=40
+            if [ "$?" = "0" ]
+            then swapfile="yes"
+            (echo "# Creating swapfile..."
+            touch /mnt/swapfile
+            dd if=/dev/zero of=/mnt/swapfile bs=1M count=1024
+            chmod 600 /mnt/swapfile
+            mkswap /mnt/swapfile
+            swapon /mnt/swapfile) | zenity --progress --title="$title" --width=450 --pulsate --auto-close --no-cancel
+            fi
 
 		elif [ "$part" == "Automatic" ]
 			then
