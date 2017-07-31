@@ -449,7 +449,7 @@ if [ "$grub" = "yes" ]
 
             arch_chroot "bootctl --path=/boot install"
             echo -e "default  Revenge\ntimeout  10" > /mnt/boot/loader/loader.conf
-            [[ -e /mnt/boot/initramfs-linux.img ]] && echo -e "title\tArch Linux\nlinux\t/vmlinuz-linux\ninitrd\t/initramfs-linux.img\noptions\troot=${bl_root} rw" > /mnt/boot/loader/entries/Revenge.conf
+            [[ -e /mnt/boot/initramfs-linux.img ]] && echo -e "title\tRevenge\nlinux\t/vmlinuz-linux\ninitrd\t/initramfs-linux.img\noptions\troot=${bl_root} rw" > /mnt/boot/loader/entries/Revenge.conf
         fi
 fi  
 
