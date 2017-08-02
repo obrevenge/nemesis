@@ -448,7 +448,7 @@ if [ "$grub" = "yes" ]
             # fixing grub theme
             echo "GRUB_DISTRIBUTOR='Revenge OS'" >> /mnt/etc/default/grub
             echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-RevengeOS.png"' >> /mnt/etc/default/grub
-            arch_chroot "grub-install --target=x86_64-efi efi-directory=/boot --bootloader-id=grub"
+            arch_chroot "grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub"
             arch_chroot "grub-mkconfig -o /boot/grub/grub.cfg"
             echo "vmlinuz-linux rw root=${root_part} initrd=\initramfs-linux.img" > /mnt/boot/startup.nsh
         fi
