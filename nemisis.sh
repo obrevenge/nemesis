@@ -444,12 +444,12 @@ if [ "$grub" = "yes" ]
                 then root_part=${dev}2
             fi
 
-            [[ $(echo $root_part | grep "/dev/mapper/") != "" ]] && bl_root=$root_part \
-            || bl_root=$"PARTUUID="$(blkid -s PARTUUID ${root_part} | sed 's/.*=//g' | sed 's/"//g')
-
-            arch_chroot "bootctl --path=/boot install"
-            echo -e "default  Revenge\ntimeout  10" > /mnt/boot/loader/loader.conf
-            echo -e "title\tRevenge\nlinux\t/vmlinuz-linux\ninitrd\t/initramfs-linux.img\noptions\troot=${bl_root} rw" > /mnt/boot/loader/entries/Revenge.conf
+            pacstrap /mnt grub efibootmgr
+            # fixing grub theme
+            echo "GRUB_DISTRIBUTOR='Revenge OS'" >> /mnt/etc/default/grub
+            echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-RevengeOS.png"' >> /mnt/etc/default/grub
+            arch_chroot "grub-install --target=x86_64-efi efi-directory=/boot"
+            arch_chroot "grub-mkconfig -o /boot/grub/grub.cfg"
         fi
 fi  
 
