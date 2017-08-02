@@ -441,7 +441,7 @@ if [ "$grub" = "yes" ]
 
 
             if [ "$ans" = "Automatic Partitioning" ]
-                then root_part=${dev}2
+                then root_part=${grub_device}2
             fi
 
             pacstrap /mnt grub efibootmgr
