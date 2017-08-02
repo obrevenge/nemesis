@@ -366,6 +366,8 @@ echo "80"
 echo "# Installing Chosen Desktop..."
 if [ "$desktop" = "Gnome" ]
     then pacstrap /mnt gnome gnome-extra gnome-revenge-desktop gnome-shell-extension-dash-to-dock gnome-shell-extension-impatience gnome-shell-extension-topicons-plus
+    # setting xorg as default session
+    sed -i 's/#WaylandEnable=false/WaylandEnable=false/g' /mnt/etc/gdm/custom.conf 
 elif [ "$desktop" = "OBR" ]
     then pacstrap /mnt obr-desktop surfn-icons-git
 elif [ "$desktop" = "Plasma" ]
