@@ -450,7 +450,9 @@ if [ "$grub" = "yes" ]
             echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-RevengeOS.png"' >> /mnt/etc/default/grub
             arch_chroot "grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub"
             arch_chroot "grub-mkconfig -o /boot/grub/grub.cfg"
-            echo "vmlinuz-linux rw root=${root_part} initrd=\initramfs-linux.img" > /mnt/boot/startup.nsh
+            # additional fix for virtualbox efi boot
+            mkdir -p /mnt/boot/EFI/BOOT
+            cp /mnt/boot/EFI/grub/grubx64.efi /mnt/boot/EFI/BOOT/BOOTX64.EFI
         fi
 fi  
 
