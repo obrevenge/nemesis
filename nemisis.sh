@@ -33,7 +33,7 @@ partitions() {
                 echo "--field=${i}:CB"
             done)
             mounts=$(yad --width=600 --height=500 --center --title="$title" --text="What Partitions Do You Want to Use?\nSelect a Mount Point for Each Partition that You want to Use." --image="$logo" --separator=" " --form $fields \
-            "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap" "NA!/root!/boot!/home!/var!/data!/media!swap")
+            "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap" "NA!/!/boot!/home!/var!/data!/media!swap")
         
             rm mounts.txt
             for m in $(echo $mounts)
@@ -53,7 +53,7 @@ partitions() {
                 done
                 
             #mounting root partition
-            root_part=` cat mountpoints | grep -i '/root' | awk '{print $2;}' `
+            root_part=` cat mountpoints | grep -v '/boot' | grep -v '/home' | grep -v 'NA' | grep -v '/var' | grep -v '/data' | grep -v '/media' | grep -v 'swap' | awk '{print $2;}' `
             mount $root_part /mnt
             
             # removing  un-selecting partions from file
