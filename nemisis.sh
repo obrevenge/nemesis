@@ -332,7 +332,7 @@ fi
 echo "55"
 echo "# Generating Locale..."
 echo "LANG=\"${locale}\"" > /mnt/etc/locale.conf
-echo "${locale} UTF-8" > /mnt/etc/locale.gen
+sed -i "s/#${locale}/${locale}/g" /mnt/etc/locale.gen
 arch_chroot "locale-gen"
 export LANG=${locale}
 
