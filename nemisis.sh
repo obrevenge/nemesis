@@ -225,11 +225,19 @@ fi
 }
 
 confirm() {
-    ans=$(zenity --width=600 --list --radiolist --title="$title" --text="You have chosen the following:\n\n$part partitioning\n\nKeyboard layout: $key\n\nTimezone: $zone $subzone\n\nHostname: $hname\n\nUsername: $username\n\nClock configuration: $clock\n\nDesktop: $desktop\n\nIf the above options are correct, click Continue.\nIf you need to make changes, click 'Cancel' to start over." --column="Select" --column="Choice" FALSE "Continue" FALSE "Cancel" --separator=" ")
+    zenity --width=600 --question --title="$title" --text="You have chosen the following:\n\n$part partitioning\n\nKeyboard layout: $key\n\nTimezone: $zone $subzone\n\nHostname: $hname\n\nUsername: $username\n\nClock configuration: $clock\n\nDesktop: $desktop\n\nIf the above options are correct, click 'Yes' to continue.\nIf you need to make changes, click 'No' to start over."
+
     
-    if [ "$ans" = "Cancel" ]
-        then greeting
-    fi
+    if [ "$?" = "0" ]
+        then installing
+	else ans=$(zenity --list --radiolist --title="$title" --text "What would you like to do now?" --column Select --column Option FALSE "Cancel" FALSE "Start Over")
+		if [ "$ans" = "Cancel" ]
+			then exit
+		elif [ "$ans" = "Start Over" ]
+			then greeting
+		else exit
+		fi
+    fi 
     
 }
 
