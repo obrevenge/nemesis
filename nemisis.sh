@@ -10,9 +10,11 @@ rm .passwd
 title="Nemesis Installer"
 
 greeting() {
-    yad --width=600 --height=400 --center --title="$title" --image="crosshairs.png" --image-on-top --form --field=" ":LBL --image-on-top --field="<big>Welcome to the Nemesis Installer</big>\n\nThank you for Choosing a Revenge OS System. Click Okay to Get Started":LBL > answer.txt
+    yad --width=600 --height=400 --center --title="$title" --image="crosshairs.png" --image-on-top --form --field=" ":LBL --image-on-top --field="<big>Welcome to the Nemesis Installer</big>\n\nThank you for Choosing a Revenge OS System. Click Okay to Get Started":LBL --field="Type of Installation":CB " " "Normal!OEM" > answer.txt
 
-    answer=` cat answer.txt `
+    answer=` cat answer.txt | awk '{print $1;}' `
+    type=` cat answer.txt | awk '{print $2;}' `
+    echo $type
 
     if [ "$answer" = "" ]
         then exit
@@ -501,7 +503,7 @@ desktop
 confirm
 vbox
 #bootloader
-installing
+#installing
 
 
 
