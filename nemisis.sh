@@ -445,7 +445,7 @@ if [ "$grub" = "yes" ]
 	    # fixing grub theme
 	    echo "GRUB_DISTRIBUTOR='Revenge OS'" >> /mnt/etc/default/grub
 	    echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-RevengeOS.png"' >> /mnt/etc/default/grub
-            arch_chroot "grub-install --target=i386-pc $grub_device"
+            arch_chroot "grub-install --target=i386-pc --recheck $grub_device"
             arch_chroot "grub-mkconfig -o /boot/grub/grub.cfg"
         else
             echo "# Installing Bootloader..."
