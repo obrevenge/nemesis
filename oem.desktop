@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Name[en_US]=OEM Liveuser Setup Tool
+Exec=oem-setup.sh live
+Name=OEM Liveuser Setup Tool
+Comment=OEM Liveuser Setup Tool

@@ -10,15 +10,10 @@ rm .passwd
 title="Nemesis Installer"
 
 greeting() {
-    yad --width=600 --height=400 --center --title="$title" --image="crosshairs.png" --image-on-top --form --field=" ":LBL --image-on-top --field="<big>Welcome to the Nemesis Installer</big>\n\nThank you for Choosing a Revenge OS System. Click Okay to Get Started":LBL --field="Type of Installation":CB " " "Normal!OEM" > answer.txt
+    yad --width=600 --height=400 --center --title="$title" --image="crosshairs.png" --image-on-top --form --field=" ":LBL --image-on-top --field="<big>Welcome to the Nemesis Installer</big>\n\nThank you for Choosing a Revenge OS System. Click Okay to Get Started":LBL --field="Type of Installation":CB --separator=" " "" "" "Normal!OEM!StationX OEM" > answer.txt
 
-    answer=` cat answer.txt | awk '{print $1;}' `
-    type=` cat answer.txt | awk '{print $2;}' `
-    echo $type
-
-    if [ "$answer" = "" ]
-        then exit
-    fi
+    type=` cat answer.txt | awk '{print $1;}' `
+    
 }
                                                    
 partitions() {
@@ -182,6 +177,16 @@ config2() {
             config2
     fi
 
+    if [[ "$username" =~ [A-Z] ]];then
+	    zenity --error --title="$title" --text "Your username must be in all lowercase, please try again." --height=40
+            config2
+    fi
+
+    if [[ "$hname" =~ [A-Z] ]];then
+	    zenity --error --title="$title" --text "Your hostname must be in all lowercase, please try again." --height=40
+            config2
+    fi
+
     lsblk -lno NAME,TYPE | grep 'disk' | awk '{print "/dev/" $1 " " $2}' | sort -u > devices.txt
 sed -i 's/\<disk\>//g' devices.txt
 devices=` awk '{print "FALSE " $0}' devices.txt `
@@ -293,11 +298,9 @@ auto_partition() {
 }
 
 installing() {
-(
+
 if [ "$part" == "Automatic" ]
-    then echo "10"
-    echo "# Paritioning Disk..."
-    auto_partition
+    then auto_partition
 fi
 
 # sorting pacman mirrors
@@ -330,8 +333,6 @@ echo "/swapfile		none	swap	defaults	0	0" >> /mnt/etc/fstab
 fi
 
 #setting locale
-echo "55"
-echo "# Generating Locale..."
 echo "LANG=\"${locale}\"" > /mnt/etc/locale.conf
 sed -i "s/#${locale}/${locale}/g" /mnt/etc/locale.gen
 arch_chroot "locale-gen"
@@ -348,12 +349,9 @@ arch_chroot "rm /etc/localtime"
 arch_chroot "ln -s /usr/share/zoneinfo/${zone}/${subzone} /etc/localtime"
 
 #setting hw clock
-echo "65"
-echo "# Setting System Clock..."
 arch_chroot "hwclock --systohc --$clock"
 
 #setting hostname
-echo "# Setting Hostname..."
 arch_chroot "echo $hname > /etc/hostname"
 
 # setting sudo permissions
@@ -362,7 +360,7 @@ echo "%wheel ALL=(ALL) ALL" >> /mnt/etc/sudoers
 # installing video and audio packages
 echo "70"
 echo "# Installing Sound, and Video Drivers..."
-pacstrap /mnt  mesa xorg-server xorg-apps xorg-xinit xorg-drivers xterm alsa-utils pulseaudio pulseaudio-alsa xf86-input-synaptics xf86-input-keyboard xf86-input-mouse xf86-input-libinput intel-ucode b43-fwcutter networkmanager nm-connection-editor network-manager-applet polkit-gnome gksu ttf-dejavu gnome-keyring xdg-user-dirs gvfs libmtp gvfs-mtp wpa_supplicant dialog iw reflector rsync mlocate bash-completion htop unrar p7zip yad yaourt polkit-gnome lynx wget zenity gksu squashfs-tools ntfs-3g gptfdisk cups ghostscript gsfonts linux-headers dkms broadcom-wl-dkms
+pacstrap /mnt  mesa xorg-server xorg-apps xorg-xinit xorg-drivers xterm alsa-utils pulseaudio pulseaudio-alsa xf86-input-synaptics xf86-input-keyboard xf86-input-mouse xf86-input-libinput intel-ucode b43-fwcutter networkmanager nm-connection-editor network-manager-applet polkit-gnome gksu ttf-dejavu gnome-keyring xdg-user-dirs gvfs libmtp gvfs-mtp wpa_supplicant dialog iw reflector rsync mlocate bash-completion htop unrar p7zip yad yaourt polkit-gnome lynx wget zenity gksu squashfs-tools ntfs-3g gptfdisk cups ghostscript gsfonts linux-headers dkms broadcom-wl-dkms revenge-lsb-release
 
 # virtualbox
 if [ "$vbox" = "yes" ]
@@ -386,54 +384,101 @@ elif [ "$desktop" = "XFCE" ]
 elif [ "$desktop" = "Mate" ]
     then pacstrap /mnt mate mate-extra mate-revenge-desktop mate-tweak brisk-menu plank mate-applet-dock mate-menu mate-netbook synapse tilda topmenu-gtk blueman metacity
 elif [ "$desktop" = "i3" ]
-    then pacstrap /mnt i3-revenge-desktop
+    then pacstrap /mnt i3-revenge-desktop lxsession
     sed -i "s|zone|${zone}/${subzone}|g" /mnt/etc/skel/.config/i3status/config
 fi
 
+# fix theme for applications running as root
+cp -r /mnt/etc/skel/. /mnt/root/
+
 #root password
-echo "85"
-echo "# Setting root password..."
 touch .passwd
 echo -e "$rtpasswd1\n$rtpasswd2" > .passwd
 arch_chroot "passwd root" < .passwd >/dev/null
+
+# autostart for normal or oem
+if [ "$type" = "OEM" ]
+    then # setting oem script for autostart
+        cp -r oem-install /mnt/etc/
+        cp oem-setup.sh /mnt/usr/bin/
+fi
+
+if [ "$type" = "StationX" ]
+    then # setting oem script for autostart
+        cp -r oem-install /mnt/etc/
+        cp oem-setup.sh /mnt/usr/bin/
+        
+fi
 
 # setting welcome screen to auto-start
 mkdir -p /mnt/etc/skel/.config/autostart
 cp obwelcome.desktop /mnt/etc/skel/.config/autostart/
 
-#adding user
+# adding user depending on type of install
 echo "90"
 echo "# Making new user..."
-arch_chroot "useradd -m -g users -G adm,lp,wheel,power,audio,video -s /bin/bash $username"
-arch_chroot "passwd $username" < .passwd >/dev/null
-rm .passwd
+if [ "$type" = "Normal" ]
+    then
+    arch_chroot "useradd -m -g users -G adm,lp,wheel,power,audio,video -s /bin/bash $username"
+    arch_chroot "passwd $username" < .passwd >/dev/null
+    rm .passwd
+else
+    mkdir -p /etc/systemd/system
+    cp -r /mnt/etc/oem-install/getty@tty1.service.d /mnt/etc/systemd/system/
+    cp -f /mnt/etc/oem-install/.bash_profile /mnt/root/
+    cp -f /mnt/etc/oem-install/.xinitrc /mnt/root/
+    cp -f /mnt/etc/oem-install/.xsession /mnt/root/
+    cp -f /mnt/etc/oem-install/.Xresources /mnt/root/
+    mkdir -p /mnt/root/.config/autostart
+    cp oem.desktop /mnt/root/.config/autostart/
+    mkdir -p /mnt/root/.config/i3
+    cp -f /mnt/etc/oem-install/config /mnt/root/.config/i3/
+
+    if [ "$desktop" = "Gnome" ]
+    	then sed -i 's/openbox-session/gnome-session/g' /mnt/root/.xinitrc
+    elif [ "$desktop" = "Plasma" ]
+        then sed -i 's/openbox-session/startkde/g' /mnt/root/.xinitrc
+    elif [ "$desktop" = "XFCE" ]
+        then sed -i 's/openbox-session/startxfce4/g' /mnt/root/.xinitrc
+    elif [ "$desktop" = "Mate" ]
+        then sed -i 's/openbox-session/mate-session/g' /mnt/root/.xinitrc
+    elif [ "$desktop" = "i3" ]
+        then sed -i 's/openbox-session/i3/g' /mnt/root/.xinitrc
+    fi
+
+fi    
+
 
 # starting desktop manager
-if [ "$desktop" = "Gnome" ]
-    then arch_chroot "systemctl enable gdm.service"
-else
-    pacstrap /mnt lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
-    arch_chroot "systemctl enable lightdm.service"
-    echo "theme-name = BlackMATE" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
-    echo "background = /usr/share/Wallpaper/Shadow_cast-RevengeOS-v2.png" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
+if [ "$type" = "Normal" ];then
+
+    if [ "$desktop" = "Gnome" ]
+        then arch_chroot "systemctl enable gdm.service"
+    else
+        pacstrap /mnt lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
+        arch_chroot "systemctl enable lightdm.service"
+        echo "theme-name = BlackMATE" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
+        echo "background = /usr/share/Wallpaper/Shadow_cast-RevengeOS-v2.png" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
+    fi
 fi
 
 # enabling network manager
 arch_chroot "systemctl enable NetworkManager"
 
-# fix theme for applications running as root
-cp -r /mnt/etc/skel/. /mnt/root/
 
 # fixing revenge branding
 rm -f /mnt/etc/os-release
 cp os-release /mnt/etc/os-release
-rm -f /mnt/etc/lsb-release
-cp lsb-release /mnt/etc/lsb-release
 
 # running mkinit
 echo "95"
 echo "# Running mkinitcpio..."
 arch_chroot "mkinitcpio -p linux"
+
+if [ "$type" = "StationX" ]
+    then # installing stationx wallpapers
+	pacstrap /mnt revenge-stationx-wallpapers
+fi
 
 # installing bootloader
 if [ "$grub" = "yes" ]
@@ -441,14 +486,19 @@ if [ "$grub" = "yes" ]
         if [ "$SYSTEM" = 'BIOS' ]
             then echo "98"
 	    echo "# Installing Bootloader..."
-            pacstrap /mnt grub
+            pacstrap /mnt grub os-prober
 	    # fixing grub theme
 	    echo "GRUB_DISTRIBUTOR='Revenge OS'" >> /mnt/etc/default/grub
-	    echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-RevengeOS.png"' >> /mnt/etc/default/grub
-            arch_chroot "grub-install --target=i386-pc --recheck $grub_device"
+	    if [ "$type" = "StationX" ]
+		then echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-StationX.png"' >> /mnt/etc/default/grub
+		else
+	    	     echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-RevengeOS.png"' >> /mnt/etc/default/grub
+	    fi
+            arch_chroot "grub-install --target=i386-pc --recheck --force --debug $grub_device"
             arch_chroot "grub-mkconfig -o /boot/grub/grub.cfg"
         else
-            echo "# Installing Bootloader..."
+            echo "98"
+	    echo "# Installing Bootloader..."
 
 
             if [ "$ans" = "Automatic Partitioning" ]
@@ -458,7 +508,11 @@ if [ "$grub" = "yes" ]
             pacstrap /mnt grub efibootmgr
             # fixing grub theme
             echo "GRUB_DISTRIBUTOR='Revenge OS'" >> /mnt/etc/default/grub
-            echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-RevengeOS.png"' >> /mnt/etc/default/grub
+            if [ "$type" = "StationX" ]
+		then echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-StationX.png"' >> /mnt/etc/default/grub
+		else
+	    	     echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-RevengeOS.png"' >> /mnt/etc/default/grub
+	    fi
             arch_chroot "grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub"
             arch_chroot "grub-mkconfig -o /boot/grub/grub.cfg"
             # additional fix for virtualbox efi boot
@@ -468,11 +522,27 @@ if [ "$grub" = "yes" ]
 fi  
 
 
+if [ "$type" = "StationX" ]
+    then # setting stationx wallpapers
+        if [ "$desktop" = "Plasma" ]
+		then sed -i 's/Mt_Shadow_Red_Dawn-RevengeOS.png/Mt_Shadow_Red_Dawn-StationX.png/g' /mnt/etc/skel/.config/plasma-org.kde.plasma.desktop-appletsrc
+		sed -i 's/Mt_Shadow_Red_Dawn-RevengeOS.png/Mt_Shadow_Red_Dawn-StationX.png/g' /mnt/root/.config/plasma-org.kde.plasma.desktop-appletsrc
+	else
+		sed -i 's/Mt_Shadow_Red_Dawn-RevengeOS.png/Mt_Shadow_Red_Dawn-StationX.png/g' /mnt/etc/skel/.config/nitrogen/bg-saved.cfg
+		sed -i 's/Mt_Shadow_Red_Dawn-RevengeOS.png/Mt_Shadow_Red_Dawn-StationX.png/g' /mnt/root/.config/nitrogen/bg-saved.cfg
+		echo "theme-name = BlackMATE" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
+        	echo "background = /usr/share/Wallpaper/Behind_the_scenes-StationX-v2.png" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
+                echo "position = 23%,center 46%,center" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
+	fi
+        
+fi
+
+
 # unmounting partitions
 umount -R /mnt
 
 echo "# Installation Finished!" 
-) | zenity --progress --title="$title" --width=450 --no-cancel
+
 }
 
 # System Detection
@@ -502,7 +572,15 @@ desktop
 confirm
 vbox
 #bootloader
-installing
+(installing) | zenity --progress --title="$title" --width=450 --no-cancel
+
+if [ "$type" = "StationX" ];then
+	zenity --info --height=40 --text "When you reboot the system you will be auto-logged in as root.\nYou may install any extra packages, or make\nany extra cofigurations that you like.\nWhen you are finished, either click the dialog box that appears on boot,\n or run 'oem-setup live' in a terminal to finalize\nthe install and prepare for the end user's first boot."
+fi
+
+if [ "$type" = "OEM" ];then
+	zenity --info --height=40 --text "When you reboot the system you will be auto-logged in as root.\nYou may install any extra packages, or make\nany extra cofigurations that you like.\nWhen you are finished, either click the dialog box that appears on boot,\n or run 'oem-setup live' in a terminal to finalize\nthe install and prepare for the end user's first boot."
+fi
 
 
 

@@ -1,2 +1,2 @@
 # nemesis
-source code for Revenge OS Nemesis Installer
+Testing version of Revenge OS Nemesis Installer
