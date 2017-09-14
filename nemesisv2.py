@@ -37,12 +37,17 @@ import time
 class MyWindow(Gtk.Window):
 
     def __init__(self):
+        #getting current timezone
+        os.system("tzupdate -p > current_timezone.txt")
+
+
         Gtk.Window.__init__(self, title="Nemesis Installer")
         self.set_border_width(3)
-        self.set_default_size(700, 500)
+        self.set_default_size(900, 600)
         """creating the notebook, main widget of the gui"""
         self.notebook = Gtk.Notebook()
-        self.notebook.set_show_tabs(False)
+        self.notebook.set_show_tabs(True)
+        self.notebook.set_tab_pos(0)
         self.add(self.notebook)
 
         self.page1 = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -248,15 +253,13 @@ class MyWindow(Gtk.Window):
         self.tz_button.set_active(0)
         self.tz_button.connect("changed", self.on_tz_button_changed)
 
-        os.popen("tzupdate -p > current_timezone.txt")
-
         tree = ET.parse("resources/timezones.xml")
         var4 = tree.findall(".//timezone_name")
         timezone_name_list = [t.text for t in var4]
 
         timezone_store = Gtk.ListStore(str)
 
-        with open('timezone.txt', 'r') as f:
+        with open('current_timezone.txt', 'r') as f:
             timezone_store.append([line.strip() for line in f])
 
         for tz in timezone_name_list:
@@ -429,6 +432,153 @@ class MyWindow(Gtk.Window):
 
         self.notebook.append_page(self.page5, Gtk.Label("New User"))
 
+        # starting page 5a 'extras'
+
+        self.page5a = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+        self.extras_label = Gtk.Label()
+        self.extras_label.set_markup("<big><b>Extras</b></big>")
+
+        self.p5abox1 = Gtk.Box()
+        self.p5abox2 = Gtk.Box()
+        self.p5abox2.set_homogeneous(20)
+        self.p5abox2a = Gtk.Box()
+        self.p5abox3 = Gtk.Box()
+        self.p5abox3.set_homogeneous(20)
+        self.p5abox3a = Gtk.Box()
+        self.p5abox4 = Gtk.Box()
+        self.p5abox4.set_homogeneous(20)
+        self.p5abox4a = Gtk.Box()
+        self.p5abox5 = Gtk.Box()
+        self.p5abox5.set_homogeneous(20)
+        self.p5abox5a = Gtk.Box()
+        self.p5abox6 = Gtk.Box()
+        self.p5abox6.set_homogeneous(20)
+        self.p5abox6a = Gtk.Box()
+        self.p5abox7 = Gtk.Box()
+        self.p5abox7.set_homogeneous(20)
+        self.p5abox7a = Gtk.Box()
+        self.p5abox8 = Gtk.Box()
+        self.p5abox8.set_homogeneous(20)
+        self.p5abox9 = Gtk.Box()
+
+        self.p5abox1.pack_start(self.extras_label, True, True, 0)
+
+        browser_list = ['chromium', 'firefox']
+
+        browser_store = Gtk.ListStore(str)
+
+        for browser in browser_list:
+            browser_store.append([browser])
+
+        self.browser_button = Gtk.ComboBox.new_with_model(browser_store)
+        renderer_text = Gtk.CellRendererText()
+        self.browser_button.pack_start(renderer_text, True)
+        self.browser_button.add_attribute(renderer_text, "text", 0)
+        self.browser_button.set_active(0)
+        self.browser_button.connect("changed", self.on_browser_button_changed)
+
+        self.browser_label = Gtk.Label("Select Your Browser:")
+
+        self.p5abox2.pack_start(self.browser_label, True, True, 0)
+        self.p5abox2.pack_end(self.browser_button, True, False, 0)
+
+        self.lts_label = Gtk.Label("Install LTS Kernel?")
+
+        answer_list = ['No', 'Yes']
+
+        answer_store = Gtk.ListStore(str)
+
+        for answer in answer_list:
+            answer_store.append([answer])
+
+        self.kernel_button = Gtk.ComboBox.new_with_model(answer_store)
+        renderer_text = Gtk.CellRendererText()
+        self.kernel_button.pack_start(renderer_text, True)
+        self.kernel_button.add_attribute(renderer_text, "text", 0)
+        self.kernel_button.set_active(0)
+        self.kernel_button.connect("changed", self.on_kernel_button_changed)
+
+
+
+
+        self.p5abox3.pack_start(self.lts_label, True, True, 0)
+        self.p5abox3.pack_end(self.kernel_button, True, False, 0)
+
+        self.office_label = Gtk.Label("Install LibreOffice?")
+
+        self.office_button = Gtk.ComboBox.new_with_model(answer_store)
+        renderer_text = Gtk.CellRendererText()
+        self.office_button.pack_start(renderer_text, True)
+        self.office_button.add_attribute(renderer_text, "text", 0)
+        self.office_button.set_active(0)
+        self.office_button.connect("changed", self.on_office_button_changed)
+
+        self.p5abox4.pack_start(self.office_label, True, True, 0)
+        self.p5abox4.pack_end(self.office_button, True, False, 0)
+
+        self.steam_label = Gtk.Label("Install Steam?")
+
+        self.steam_button = Gtk.ComboBox.new_with_model(answer_store)
+        renderer_text = Gtk.CellRendererText()
+        self.steam_button.pack_start(renderer_text, True)
+        self.steam_button.add_attribute(renderer_text, "text", 0)
+        self.steam_button.set_active(0)
+        self.steam_button.connect("changed", self.on_steam_button_changed)
+
+        self.p5abox5.pack_start(self.steam_label, True, True, 0)
+        self.p5abox5.pack_end(self.steam_button, True, False, 0)
+
+        self.wine_label = Gtk.Label("Install Wine/PlayonLinux?")
+
+        self.wine_button = Gtk.ComboBox.new_with_model(answer_store)
+        renderer_text = Gtk.CellRendererText()
+        self.wine_button.pack_start(renderer_text, True)
+        self.wine_button.add_attribute(renderer_text, "text", 0)
+        self.wine_button.set_active(0)
+        self.wine_button.connect("changed", self.on_wine_button_changed)
+
+        self.p5abox6.pack_start(self.wine_label, True, True, 0)
+        self.p5abox6.pack_end(self.wine_button, True, False, 0)
+
+        self.flatpak_label = Gtk.Label("Install Fatpak support?")
+
+        self.flatpak_button = Gtk.ComboBox.new_with_model(answer_store)
+        renderer_text = Gtk.CellRendererText()
+        self.flatpak_button.pack_start(renderer_text, True)
+        self.flatpak_button.add_attribute(renderer_text, "text", 0)
+        self.flatpak_button.set_active(0)
+        self.flatpak_button.connect("changed", self.on_flatpak_button_changed)
+
+        self.p5abox7.pack_start(self.flatpak_label, True, True, 0)
+        self.p5abox7.pack_end(self.flatpak_button, True, False, 0)
+
+        self.p5anext_button = Gtk.Button("Next")
+        self.p5anext_button.connect("clicked", self.on_p5anext_button_clicked)
+
+        self.p5abox9.pack_end(self.p5anext_button, False, False, 0)
+
+
+
+        self.page5a.pack_start(self.p5abox1, True, True, 0)
+        self.page5a.pack_start(self.p5abox2, False, False, 0)
+        self.page5a.pack_start(self.p5abox2a, True, True, 0)
+        self.page5a.pack_start(self.p5abox3, False, False, 0)
+        self.page5a.pack_start(self.p5abox3a, True, True, 0)
+        self.page5a.pack_start(self.p5abox4, False, False, 0)
+        self.page5a.pack_start(self.p5abox4a, True, True, 0)
+        self.page5a.pack_start(self.p5abox5, False, False, 0)
+        self.page5a.pack_start(self.p5abox5a, True, True, 0)
+        self.page5a.pack_start(self.p5abox6, False, False, 0)
+        self.page5a.pack_start(self.p5abox6a, True, True, 0)
+        self.page5a.pack_start(self.p5abox7, False, False, 0)
+        self.page5a.pack_start(self.p5abox7a, True, True, 0)
+        self.page5a.pack_start(self.p5abox8, True, True, 0)
+        self.page5a.pack_end(self.p5abox9, False, False, 0)
+
+
+        self.notebook.append_page(self.page5a, Gtk.Label("Extras"))
+
 
         # starting page 6
 
@@ -524,6 +674,93 @@ class MyWindow(Gtk.Window):
     def installation_finished(self, widget):
         subprocess.call("sudo reboot", shell=True)
 
+    def on_p5anext_button_clicked(self, widget):
+        tree_iter = self.browser_button.get_active_iter()
+        if tree_iter != None:
+            model = self.browser_button.get_model()
+            global browser
+            browser = model[tree_iter][0]
+            print(browser)
+
+        tree_iter = self.kernel_button.get_active_iter()
+        if tree_iter != None:
+            model = self.kernel_button.get_model()
+            global lts_kernel
+            lts_kernel = model[tree_iter][0]
+            print(lts_kernel)
+
+        tree_iter = self.office_button.get_active_iter()
+        if tree_iter != None:
+            model = self.office_button.get_model()
+            global office
+            office = model[tree_iter][0]
+            print(office)
+
+        tree_iter = self.steam_button.get_active_iter()
+        if tree_iter != None:
+            model = self.steam_button.get_model()
+            global steam
+            steam = model[tree_iter][0]
+            print(steam)
+
+        tree_iter = self.wine_button.get_active_iter()
+        if tree_iter != None:
+            model = self.wine_button.get_model()
+            global wine
+            wine = model[tree_iter][0]
+            print(wine)
+
+        tree_iter = self.flatpak_button.get_active_iter()
+        if tree_iter != None:
+            model = self.flatpak_button.get_model()
+            global flatpak
+            flatpak = model[tree_iter][0]
+            print(flatpak)
+
+        self.notebook.next_page()
+
+
+
+    def on_kernel_button_changed(self, widget):
+        tree_iter = self.kernel_button.get_active_iter()
+        if tree_iter != None:
+            model = self.kernel_button.get_model()
+            global lts_kernel
+            lts_kernel = model[tree_iter][0]
+            print(lts_kernel)
+
+    def on_office_button_changed(self, widget):
+        tree_iter = self.office_button.get_active_iter()
+        if tree_iter != None:
+            model = self.office_button.get_model()
+            global office
+            office = model[tree_iter][0]
+            print(office)
+
+    def on_steam_button_changed(self, widget):
+        tree_iter = self.steam_button.get_active_iter()
+        if tree_iter != None:
+            model = self.steam_button.get_model()
+            global steam
+            steam = model[tree_iter][0]
+            print(steam)
+
+    def on_wine_button_changed(self, widget):
+        tree_iter = self.wine_button.get_active_iter()
+        if tree_iter != None:
+            model = self.wine_button.get_model()
+            global wine
+            wine = model[tree_iter][0]
+            print(wine)
+
+    def on_flatpak_button_changed(self, widget):
+        tree_iter = self.flatpak_button.get_active_iter()
+        if tree_iter != None:
+            model = self.flatpak_button.get_model()
+            global flatpak
+            flatpak = model[tree_iter][0]
+            print(flatpak)
+
 
 
 
@@ -614,12 +851,42 @@ class MyWindow(Gtk.Window):
             Gtk.main_iteration()
         subprocess.call(["/home/liveuser/nemesis/resources/new_user.sh"])
 
+        self.progressbar.set_text("Installing Extras...")
+        self.progressbar.set_show_text("some_text")
+        self.progressbar.set_fraction(0.85)
+        while Gtk.events_pending():
+            Gtk.main_iteration()
+
+        subprocess.call("echo '{}' >> pkg_list/packages.txt".format(browser), shell=True)
+
+        if lts_kernel == "Yes":
+            subprocess.call("echo 'linux-lts' >> pkg_list/packages.txt", shell=True)
+
+        if office == "Yes":
+            subprocess.call("echo 'libreoffice-fresh hunspell hunspell-en' >> pkg_list/packages.txt", shell=True)
+
+        if steam == "Yes":
+            subprocess.call("echo 'steam lib32-mesa ttf-liberation lib32-alsa-lib lib32-libpulse lib32-alsa-plugins' >> pkg_list/packages.txt", shell=True)
+
+        if wine == "Yes":
+            subprocess.call("echo 'wine wine_gecko wine-mono playonlinux lib32-mesa lib32-alsa-lib lib32-libpulse lib32-alsa-plugins' >> pkg_list/packages.txt", shell=True)
+
+        if flatpak == "Yes":
+            subprocess.call("echo 'flatpak' >> pkg_list/packages.txt", shell=True)
+
+        subprocess.call("pacstrap /mnt $(cat pkg_list/packages.txt)", shell=True)
+
+
+
+
         self.progressbar.set_text("Finishing Install...")
         self.progressbar.set_show_text("some_text")
         self.progressbar.set_fraction(0.9)
         while Gtk.events_pending():
             Gtk.main_iteration()
         subprocess.call(["/home/liveuser/nemesis/resources/btloader.sh"])
+
+
 
 
         self.progressbar.set_text("Installation Finished")
@@ -637,6 +904,14 @@ class MyWindow(Gtk.Window):
 
     def on_cancel_button_clicked(self, widget):
         Gtk.main_quit()
+
+    def on_browser_button_changed(self, widget):
+        tree_iter = self.browser_button.get_active_iter()
+        if tree_iter != None:
+            model = self.browser_button.get_model()
+            global browser
+            browser = model[tree_iter][0]
+            print(browser)
 
 
 

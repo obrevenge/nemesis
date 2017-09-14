@@ -1,2 +1,2 @@
 # nemesis
-Testing version of Revenge OS Nemesis Installer
+Stable version of Revenge OS Nemesis Installer

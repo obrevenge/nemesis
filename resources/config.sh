@@ -43,12 +43,12 @@ export LANG=${locale}
 mkdir -p /mnt/etc/X11/xorg.conf.d/
 echo -e 'Section "InputClass"\n	Identifier "system-keyboard"\n	MatchIsKeyboard "on"\n	Option "XkbLayout" "'$key'"\n	Option "XkbModel" "'$model'"\n	Option "XkbVariant" ",'$variant'"\n	 Option "XkbOptions" "grp:alt_shift_toggle"\nEndSection' > /mnt/etc/X11/xorg.conf.d/00-keyboard.conf
 
+#setting hw clock
+arch_chroot "hwclock --systohc --utc"
+
 #setting timezone
 arch_chroot "rm /etc/localtime"
 arch_chroot "ls -s /usr/share/zoneinfo/${timezone} /etc/localtime"
-
-#setting hw clock
-arch_chroot "hwclock --systohc --utc"
 
 #setting hostname
 arch_chroot "echo $hname > /etc/hostname"

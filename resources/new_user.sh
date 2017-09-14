@@ -58,13 +58,13 @@ mkdir -p /mnt/etc/skel/.config/autostart
 cp obwelcome.desktop /mnt/etc/skel/.config/autostart/
 
 # adding user depending on type of install
-echo "90"
-echo "# Making new user..."
 if [ "$type" = "Normal" ]
     then
     arch_chroot "useradd -m -g users -G adm,lp,wheel,power,audio,video -s /bin/bash $username"
     arch_chroot "passwd $username" < .passwd >/dev/null
     rm .passwd
+    # making sure config files are sent to user's home directory
+    arch_chroot "cp -r /etc/skel/. /home/${username}/"
 else
     mkdir -p /etc/systemd/system
     cp -r /mnt/etc/oem-install/getty@tty1.service.d /mnt/etc/systemd/system/
