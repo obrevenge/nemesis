@@ -798,7 +798,9 @@ class MyWindow(Gtk.Window):
             Gtk.main_iteration()
         subprocess.call("pacstrap /mnt base base-devel", shell=True)
         subprocess.call("rm -f /mnt/etc/pacman.conf", shell=True)
-        subprocess.call("cp -f /etc/pacman.conf /mnt/etc/pacman.conf", shell=True)
+        subprocess.call("rm -f /etc/pacman.conf", shell=True)
+        subprocess.call("cp -f /home/liveuser/nemesis/resources/pacman.conf /mnt/etc/pacman.conf", shell=True)
+        subprocess.call("cp -f /home/liveuser/nemesis/resources/pacman.conf /etc/pacman.conf", shell=True)
 
         self.progressbar.set_text("Generating File System Table...")
         self.progressbar.set_show_text("some_text")

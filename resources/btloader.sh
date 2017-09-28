@@ -37,7 +37,6 @@ fi
 
 grub_device=$dev
 
-
 # running mkinit
 
 arch_chroot "mkinitcpio -p linux"
@@ -57,6 +56,7 @@ if [ "$grub" = "Yes" ]
             pacstrap /mnt grub os-prober
 	    # fixing grub theme
 	    echo "GRUB_DISTRIBUTOR='Revenge OS'" >> /mnt/etc/default/grub
+	    sed -i 's/quiet/quiet splash/g' /mnt/etc/default/grub
 	    if [ "$type" = "StationX" ]
 		then echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-StationX.png"' >> /mnt/etc/default/grub
 		else
@@ -76,6 +76,7 @@ if [ "$grub" = "Yes" ]
             pacstrap /mnt grub efibootmgr
             # fixing grub theme
             echo "GRUB_DISTRIBUTOR='Revenge OS'" >> /mnt/etc/default/grub
+            sed -i 's/quiet/quiet splash/g' /mnt/etc/default/grub
             if [ "$type" = "StationX" ]
 		then echo 'GRUB_BACKGROUND="/usr/share/Wallpaper/Shadow_cast-StationX.png"' >> /mnt/etc/default/grub
 		else

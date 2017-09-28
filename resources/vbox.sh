@@ -35,6 +35,6 @@ if [[ $(echo $graphics | grep -i 'virtualbox') != "" ]]
 fi
 
 if [ "$vbox" = "yes" ]
-	then pacstrap /mnt virtualbox-guest-modules-arch virtualbox-guest-utils
+	then pacstrap /mnt virtualbox-guest-dkms virtualbox-guest-utils
     echo -e "vboxguest\nvboxsf\nvboxvideo" > /mnt/etc/modules-load.d/virtualbox.conf
 fi

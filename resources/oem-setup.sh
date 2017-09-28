@@ -132,10 +132,10 @@ rm -rf /etc/oem-install
 
 # starting the DM
 if [ "$desktop" = "Gnome" ]
-    then systemctl enable gdm.service
+    then systemctl enable gdm-plymouth.service
          reboot
 else
-    systemctl enable lightdm.service
+    systemctl enable lightdm-plymouth.service
     reboot
 fi
 

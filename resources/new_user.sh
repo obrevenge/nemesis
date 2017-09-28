@@ -30,6 +30,12 @@ arch_chroot() {
 }
 
 
+# Setting up plymouth theme to work
+sed -i 's/base udev/base udev plymouth/g' /mnt/etc/mkinitcpio.conf
+
+# Installing plymouth theme
+pacstrap /mnt revenge-plymouth-theme
+
 
 # fix theme for applications running as root
 cp -r /mnt/etc/skel/. /mnt/root/
@@ -105,10 +111,10 @@ cp os-release /mnt/etc/os-release
 if [ "$type" = "Normal" ];then
 
     if [ "$desktop" = "Gnome" ]
-        then arch_chroot "systemctl enable gdm.service"
+        then arch_chroot "systemctl enable gdm-plymouth.service"
     else
         pacstrap /mnt lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings
-        arch_chroot "systemctl enable lightdm.service"
+        arch_chroot "systemctl enable lightdm-plymouth.service"
         echo "theme-name = BlackMATE" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
         echo "background = /usr/share/Wallpaper/Shadow_cast-RevengeOS-v2.png" >> /mnt/etc/lightdm/lightdm-gtk-greeter.conf
     fi
