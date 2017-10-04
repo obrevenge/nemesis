@@ -135,7 +135,7 @@ if [ "$desktop" = "Gnome" ]
     then systemctl enable gdm.service
          reboot
 else
-    systemctl enable lightdm.service
+    systemctl enable lightdm-plymouth.service
     reboot
 fi
 
